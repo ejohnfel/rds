@@ -1,0 +1,3 @@
+sudo cp updateos /usr/local/bin
+sudo chown root:root /usr/local/bin/updateos
+sudo chmod ugo+rx /usr/local/bin/updateos
