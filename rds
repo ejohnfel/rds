@@ -1,0 +1,78 @@
+#!/bin/bash
+
+SESSION=${HOSTNAME}.`date +%F.%H-%M-%s`.${RANDOM}
+SCRIPT=${SESSION}.sh
+TARFILE=${SESSION}.tgz
+
+#
+# 0. Create Execute script
+# 1. Tar up files
+# 2. Copy TAR file and Execute Script over to target
+# 3. Execute Script
+#
+# Tar file must contain all required files and a "cmds.txt" file to be fed to the execute script
+#
+
+# Create Execution Script
+function CreateExecuteScript()
+{
+	cat > /tmp/${SCRIPT}<<eof
+#!/bin/bash
+pushd /tmp > /dev/null
+
+tar -xzf ${TARFILE}
+
+rm ${TARFILE}
+
+pushd /tmp/${SESSION} > /dev/null
+
+while read line; do
+	eval "\${line}"
+done < cmds.txt
+
+dirs -c > /dev/null
+
+rm -R /tmp/${SESSION}
+eof
+
+	chmod u+rx /tmp/${SCRIPT}
+}
+
+#
+# Main Loop
+#
+
+CreateExecuteScript
+
+mkdir /tmp/${SESSION}
+
+TARGET="${1}"
+shift 1
+
+CPED=0
+for file in $*; do
+	cp ${file} /tmp/${SESSION}
+	CPED=1
+done
+
+if [ ${CPED} -eq 1 ]; then
+	pushd /tmp > /dev/null
+
+	echo -e "Packing files for transfer..."
+	tar -czf ${TARFILE} ${SESSION}
+
+	echo -e "Transferring control script..."
+	scp /tmp/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
+	echo -e "Transferring files..."
+	scp /tmp/${TARFILE} ${USERNAME}@${TARGET}:/tmp/${TARFILE} > /dev/null
+	echo -e "Executing control script..."
+	slogin ${USERNAME}${TARGET} "/bin/bash /tmp/${SCRIPT}" > /dev/null
+	echo -e "Cleaning up.."
+	slogin ${USERNAME}${TARGET} "rm /tmp/${SCRIPT}" > /dev/null
+	echo -e "Done..."
+	popd > /dev/null
+fi
+
+[ -e /tmp/${SCRIPT} ] && rm /tmp/${SCRIPT}
+[ -e /tmp/${TARFILE} ] && rm /tmp/${TARFILE}
+[ -e /tmp/${SESSION} ] && rm -R /tmp/${SESSION}
