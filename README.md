@@ -9,9 +9,9 @@ Initially, all files are TAR archived and transferred to a target host, along wi
 
 The TAR archive must include at least one file, "cmds.txt", which will contain any commands required to complete distribution on the target host.
 
-All commands will be executed inside the folder where the files were unarchived by the dynamically created execution script.
+All commands will be executed inside the folder where the files were unarchived by the dynamically created execution script. The files are transferred and unarchived in /tmp into a dynamically created session folder that consists of the time/date, host it came from and a random number to prevent conflicts.
 
-This system is could be optimized further, but is only a stop gap tool and I will likely delete it at some point.
+This script could be optimized further, but is only a stop gap tool and I will likely delete it at some point.
 
 Usage...
 
