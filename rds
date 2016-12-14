@@ -49,6 +49,12 @@ mkdir /tmp/${SESSION}
 TARGET="${1}"
 shift 1
 
+if [[ "${TARGET}" =~ "\@" ]]; then
+	COMBO=${TARGET}
+else
+	COMBO=${LOGNAME}@${TARGET}
+fi
+
 CPED=0
 for file in $*; do
 	cp ${file} /tmp/${SESSION}
@@ -62,13 +68,13 @@ if [ ${CPED} -eq 1 ]; then
 	tar -czf ${TARFILE} ${SESSION}
 
 	echo -e "Transferring control script..."
-	scp /tmp/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
+	scp /tmp/${SCRIPT} ${COMBO}:/tmp/${SCRIPT} > /dev/null
 	echo -e "Transferring files..."
-	scp /tmp/${TARFILE} ${USERNAME}@${TARGET}:/tmp/${TARFILE} > /dev/null
+	scp /tmp/${TARFILE} ${COMBO}:/tmp/${TARFILE} > /dev/null
 	echo -e "Executing control script..."
-	slogin ${USERNAME}${TARGET} "/bin/bash /tmp/${SCRIPT}" > /dev/null
+	slogin ${COMBO} "/bin/bash /tmp/${SCRIPT}" > /dev/null
 	echo -e "Cleaning up.."
-	slogin ${USERNAME}${TARGET} "rm /tmp/${SCRIPT}" > /dev/null
+	slogin ${COMBO} "rm /tmp/${SCRIPT}" > /dev/null
 	echo -e "Done..."
 	popd > /dev/null
 fi
