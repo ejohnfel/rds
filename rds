@@ -55,8 +55,6 @@ else
 	COMBO=${LOGNAME}@${TARGET}
 fi
 
-echo -e "Combo : ${COMBO}"
-
 CPED=0
 for file in $*; do
 	cp ${file} /tmp/${SESSION}
@@ -68,6 +66,8 @@ if [ ${CPED} -eq 1 ]; then
 
 	echo -e "Packing files for transfer..."
 	tar -czf ${TARFILE} ${SESSION}
+
+	echo -e "Trying : ${COMBO}"
 
 	echo -e "Transferring control script..."
 	scp /tmp/${SCRIPT} ${COMBO}:/tmp/${SCRIPT} > /dev/null
