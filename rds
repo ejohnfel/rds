@@ -49,11 +49,13 @@ mkdir /tmp/${SESSION}
 TARGET="${1}"
 shift 1
 
-if [[ "${TARGET}" =~ "\@" ]]; then
+if [[ "${TARGET}" =~ "@" ]]; then
 	COMBO=${TARGET}
 else
 	COMBO=${LOGNAME}@${TARGET}
 fi
+
+echo -e "Combo : ${COMBO}"
 
 CPED=0
 for file in $*; do
