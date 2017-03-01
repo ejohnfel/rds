@@ -46,16 +46,14 @@ rm ${TARFILE}
 
 pushd /tmp/${SESSION} > /dev/null
 
-while read line; do
-	eval "\${line}"
-done < ${CMDSFILE}
+source ${CMDSFILE}
 
 dirs -c > /dev/null
 
 rm -R /tmp/${SESSION}
 eof
 
-	chmod u+rx /tmp/${SCRIPT}
+	chmod u+rx /tmp/${SESSION}/${SCRIPT}
 }
 
 # Add host To Target
