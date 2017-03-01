@@ -36,7 +36,7 @@ function Usage()
 # Create Execution Script
 function CreateExecuteScript()
 {
-	cat > /tmp/${SCRIPT}<<eof
+	cat > /tmp/${SESSION}/${SCRIPT}<<eof
 #!/bin/bash
 pushd /tmp > /dev/null
 
@@ -96,6 +96,21 @@ function ProcessProfile()
 	done < "${1}"
 }
 
+# CreateSession : Create Session folder
+function CreateSession()
+{
+	echo -e "Creating Session..."
+	mkdir /tmp/${SESSION}
+
+	CreateExecuteScript
+
+	cp "${CMDSFILE}" /tmp/${SESSION}
+
+	for ((index=0; index < ${#includes[@]}; ++index)); do
+		cp ${includes[${index}]} /tmp/${SESSION}
+	done
+}
+
 #
 # Main Loop
 #
@@ -118,16 +133,10 @@ while [ ! "${1}" = "" ]; do
 	shift 1
 done
 
-CreateExecuteScript
+if [ -f ${CMDSFILE} ]; then
 
-mkdir /tmp/${SESSION}
-cp "${CMDSFILE}" /tmp/${SESSION}
+	[ ! -f /tmp/${SESSION} ] && CreateSession
 
-for ((index=0; index < ${#includes[@]}; ++index)); do
-	cp ${includes[${index}]} /tmp/${SESSION}
-done
-
-if [ ${#includes[@]} -gt 0 ]; then
 	pushd /tmp > /dev/null
 
 	echo -e "Packing files for transfer..."
@@ -137,7 +146,7 @@ if [ ${#includes[@]} -gt 0 ]; then
 		TARGET=${targets[${index}]}
 		echo -e "--> Transferring to ${TARGET}..."
 		echo -e "Transferring control script..."
-		scp /tmp/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
+		scp /tmp/${SESSION}/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
 		echo -e "Transferring files..."
 		scp /tmp/${TARFILE} ${USERNAME}@${TARGET}:/tmp/${TARFILE} > /dev/null
 		echo -e "Executing control script..."
