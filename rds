@@ -72,7 +72,7 @@ function AddTargets()
 {
 	while read target rem; do
 		AddTarget "${target}"
-	done << "${1}"
+	done < "${1}"
 }
 
 # AddFile : To includes
