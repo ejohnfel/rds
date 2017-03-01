@@ -1,5 +1,12 @@
 #!/bin/bash
 
+declare -a includes
+declare -a targets
+
+targetCount=0
+count=0
+
+CMDSFILE=cmds.txt
 SESSION=${HOSTNAME}.`date +%F.%H-%M-%s`.${RANDOM}
 SCRIPT=${SESSION}.sh
 TARFILE=${SESSION}.tgz
@@ -12,6 +19,19 @@ TARFILE=${SESSION}.tgz
 #
 # Tar file must contain all required files and a "cmds.txt" file to be fed to the execute script
 #
+
+# Usage
+function Usage()
+{
+	echo -e "RDS - Remote Distributed Scripting"
+	echo -e "=================================="
+	echo -e "rds -t [target host] -c [cmd file] [file 1] [file 2] ... [file n]"
+	echo -e "rds -f [list of targets] -c [cmd file] [file 1] [file 2] ... [file n]"
+	echo -e "rds -p [profile]"
+	echo -e "=================================="
+	echo -e "RDS defaults to 'cmds.txt' if command file not provided"
+	echo -e "* Generally only works when in an SSH-AGENT Shell"
+}
 
 # Create Execution Script
 function CreateExecuteScript()
@@ -28,7 +48,7 @@ pushd /tmp/${SESSION} > /dev/null
 
 while read line; do
 	eval "\${line}"
-done < cmds.txt
+done < ${CMDSFILE}
 
 dirs -c > /dev/null
 
@@ -38,14 +58,75 @@ eof
 	chmod u+rx /tmp/${SCRIPT}
 }
 
+# Add host To Target
+# Parameters : [host]
+function AddTarget()
+{
+	targets[${targetCount}]="${1}"
+	targetCount=$(( ${targetCount} + 1 ))
+}
+
+# Add Targets To Target
+# Parameters : [target file]
+function AddTargets()
+{
+	while read target rem; do
+		AddTarget "${target}"
+	done << "${1}"
+}
+
+# AddFile : To includes
+# Parameter : [filename]
+function AddFile()
+{
+	includes[${count}]="${1}"
+	count=$(( ${count} + 1 ))
+}
+
+# ProcessProfile : Process profile
+# Parameters : [profile]
+function ProcessProfile()
+{
+	while read label value1 value2 value3 value4; do
+		case "${label}" in
+		"target")	AddTarget "${value1}" ;;
+		"file")		AddFile "${value1}" ;;
+		"cmds")		CMDSFILE="${value1}" ;;
+		esac
+	done < "${1}"
+}
+
 #
 # Main Loop
 #
 
+while [ ! "${1}" = "" ]; do
+	case "${1}" in
+	"-t")	AddTarget "${2}"
+		shift 1 ;;
+	"-f")	AddTargets "${2}"
+		shift 1 ;;
+	"-p")	ProcessProfile "${2}"
+		shift 1 ;;
+	"-h")	Usage
+		exit ;;
+	"-c")	CMDSFILE="${2}"
+		shift 1 ;;
+	*)	AddFile "${1}" ;;
+	esac
+
+	shift 1
+done
+
 CreateExecuteScript
 
 mkdir /tmp/${SESSION}
+cp "${CMDSFILE}" /tmp/${SESSION}
 
+<<<<<<< HEAD
+for ((index=0; index < ${#includes[@]}; ++index)); do
+	cp ${includes[${index}]} /tmp/${SESSION}
+=======
 TARGET="${1}"
 shift 1
 
@@ -59,14 +140,30 @@ CPED=0
 for file in $*; do
 	cp ${file} /tmp/${SESSION}
 	CPED=1
+>>>>>>> db6062ef2a6a1dc7396d69c082b5797368d44e77
 done
 
-if [ ${CPED} -eq 1 ]; then
+if [ ${#includes[@]} -gt 0 ]; then
 	pushd /tmp > /dev/null
 
 	echo -e "Packing files for transfer..."
 	tar -czf ${TARFILE} ${SESSION}
 
+<<<<<<< HEAD
+	for ((index=0; index < ${#targets[@]}; ++index)); do
+		TARGET=${targets[${index}]}
+		echo -e "Transferring control script..."
+		scp /tmp/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
+		echo -e "Transferring files..."
+		scp /tmp/${TARFILE} ${USERNAME}@${TARGET}:/tmp/${TARFILE} > /dev/null
+		echo -e "Executing control script..."
+		slogin ${USERNAME}${TARGET} "/bin/bash /tmp/${SCRIPT}" > /dev/null
+		echo -e "Cleaning up.."
+		slogin ${USERNAME}${TARGET} "rm /tmp/${SCRIPT}" > /dev/null
+		echo -e "Done..."
+	done
+
+=======
 	echo -e "Trying : ${COMBO}"
 
 	echo -e "Transferring control script..."
@@ -78,6 +175,7 @@ if [ ${CPED} -eq 1 ]; then
 	echo -e "Cleaning up.."
 	slogin ${COMBO} "rm /tmp/${SCRIPT}" > /dev/null
 	echo -e "Done..."
+>>>>>>> db6062ef2a6a1dc7396d69c082b5797368d44e77
 	popd > /dev/null
 fi
 
