@@ -135,6 +135,7 @@ if [ ${#includes[@]} -gt 0 ]; then
 
 	for ((index=0; index < ${#targets[@]}; ++index)); do
 		TARGET=${targets[${index}]}
+		echo -e "--> Transferring to ${TARGET}..."
 		echo -e "Transferring control script..."
 		scp /tmp/${SCRIPT} ${USERNAME}@${TARGET}:/tmp/${SCRIPT} > /dev/null
 		echo -e "Transferring files..."
