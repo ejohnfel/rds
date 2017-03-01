@@ -123,24 +123,8 @@ CreateExecuteScript
 mkdir /tmp/${SESSION}
 cp "${CMDSFILE}" /tmp/${SESSION}
 
-<<<<<<< HEAD
 for ((index=0; index < ${#includes[@]}; ++index)); do
 	cp ${includes[${index}]} /tmp/${SESSION}
-=======
-TARGET="${1}"
-shift 1
-
-if [[ "${TARGET}" =~ "@" ]]; then
-	COMBO=${TARGET}
-else
-	COMBO=${LOGNAME}@${TARGET}
-fi
-
-CPED=0
-for file in $*; do
-	cp ${file} /tmp/${SESSION}
-	CPED=1
->>>>>>> db6062ef2a6a1dc7396d69c082b5797368d44e77
 done
 
 if [ ${#includes[@]} -gt 0 ]; then
@@ -149,7 +133,6 @@ if [ ${#includes[@]} -gt 0 ]; then
 	echo -e "Packing files for transfer..."
 	tar -czf ${TARFILE} ${SESSION}
 
-<<<<<<< HEAD
 	for ((index=0; index < ${#targets[@]}; ++index)); do
 		TARGET=${targets[${index}]}
 		echo -e "Transferring control script..."
@@ -163,19 +146,6 @@ if [ ${#includes[@]} -gt 0 ]; then
 		echo -e "Done..."
 	done
 
-=======
-	echo -e "Trying : ${COMBO}"
-
-	echo -e "Transferring control script..."
-	scp /tmp/${SCRIPT} ${COMBO}:/tmp/${SCRIPT} > /dev/null
-	echo -e "Transferring files..."
-	scp /tmp/${TARFILE} ${COMBO}:/tmp/${TARFILE} > /dev/null
-	echo -e "Executing control script..."
-	slogin ${COMBO} "/bin/bash /tmp/${SCRIPT}" > /dev/null
-	echo -e "Cleaning up.."
-	slogin ${COMBO} "rm /tmp/${SCRIPT}" > /dev/null
-	echo -e "Done..."
->>>>>>> db6062ef2a6a1dc7396d69c082b5797368d44e77
 	popd > /dev/null
 fi
 
