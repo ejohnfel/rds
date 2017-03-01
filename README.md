@@ -26,3 +26,5 @@ It is also best to use SSH keys instead of passwords and utilize shd-agent to re
 Each initial connection to a remote host, will incur at least one request to add that host to the known_hosts file.
 
 Inside "cmds.txt" it is best to use absolute pathes, any SUDO commands should be listed in this file.
+
+When using the targets list command line arg, the list can be any text file that lists a host on each line, at the beginning of the line, followed by zero or more fields. The fields must be seperated by spaces. The fields following the host specification are all ignored.
