@@ -6,6 +6,7 @@ declare -a targets
 targetCount=0
 count=0
 
+TERMINATE=0
 CMDSFILE=cmds.txt
 SESSION=${HOSTNAME}.`date +%F.%H-%M-%s`.${RANDOM}
 SCRIPT=${SESSION}.sh
@@ -105,7 +106,21 @@ function CreateSession()
 	cp "${CMDSFILE}" /tmp/${SESSION}
 
 	for ((index=0; index < ${#includes[@]}; ++index)); do
-		cp ${includes[${index}]} /tmp/${SESSION}
+		ITEM="${includes[${index}]}"
+
+		if [ ! -f ${ITEM} ]; then
+			read -p "${ITEM} is missing, continue anyway (y/n)? "
+
+			if [ ${REPLY} = "y" -o ${REPLY} = "Y" ]; then
+				continue
+			else
+				TERMINATE=1
+
+				break
+			fi
+		fi
+
+		cp ${ITEM} /tmp/${SESSION}
 	done
 }
 
@@ -134,6 +149,8 @@ done
 if [ -f ${CMDSFILE} ]; then
 
 	[ ! -f /tmp/${SESSION} ] && CreateSession
+
+	[ ${TERMINATE} -eq 1 ] && exit 1
 
 	pushd /tmp > /dev/null
 
