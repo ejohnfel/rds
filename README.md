@@ -19,7 +19,14 @@ rds target-host cmds.txt file1 file2 ... filen
 
 The user who runs the "rds" script will have his/her identity used to copy, execute and if needed, SUDO any commands.
 
-Be sure if the user needs to SUDO, that the user can.
+Be sure if the user needs to SUDO, that the user can elevate without having to type in credentials (see NOPASSWD option for SUDOERS). 
+
+Since NOPASSWD is a very risky, if almost irresposible setting in SUDO, you will want to supplement your security posture with restrictions on commands that can be executed in either SUDOERS or sshd_config, or both.
+
+At the very least, a Match statement in sshd_config should be used to match the user and source address of the distribution point where the user will be coming from, "Match Address [source] User [user]" to
+restrict where the distribution user can come from.
+
+Better yet, require no SUDO capability, drop files in a specific location of your choosing on the target host and have a cron job with the right priveleges complete the distribution.
 
 It is also best to use SSH keys instead of passwords and utilize shd-agent to reduce the typing of key passphrases.
 
